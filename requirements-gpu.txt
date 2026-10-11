@@ -1,0 +1,13 @@
+# Generation stack used for the paper (Python 3.12, CUDA 12.8)
+vllm==0.11.0
+torch==2.8.0
+transformers==4.57.6
+accelerate==1.15.0
+huggingface_hub[hf_transfer]
+numpy==2.2.6
+pandas==3.0.6
+scipy==1.18.1
+nltk==3.10.3
+sqlparse==0.6.0
+pyarrow
+matplotlib

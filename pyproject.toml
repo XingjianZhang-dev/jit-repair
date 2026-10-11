@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "jit-repair"
+version = "1.0.0"
+description = "Just-in-Time Repair: spending test-time compute where LLM-generated programs and SQL fail"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{ name = "Xingjian Zhang" }]
+dependencies = ["numpy>=1.26", "matplotlib>=3.8", "pyarrow>=14"]
+
+[tool.setuptools]
+packages = ["jit_repair"]
