@@ -105,6 +105,11 @@ python tests/test_paired_stats.py    # paired statistics against a stored result
 python tests/test_pw_frozen_replay.py <depth-5 set> <four-label set>   # replay of stored ProofWriter outputs (archive records)
 ```
 
+## License
+
+The code is released under the MIT License (`LICENSE`). Benchmarks and model weights keep their own licenses
+(`DATA.md`).
+
 ## Citation
 
 If you use this code, please cite the paper; bibliographic details will be added on publication.
