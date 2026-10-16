@@ -9,7 +9,7 @@ description = "Just-in-Time Repair: spending test-time compute where LLM-generat
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
-authors = [{ name = "Xingjian Zhang" }]
+authors = [{ name = "The jit-repair authors" }]
 dependencies = ["numpy>=1.26", "matplotlib>=3.8", "pyarrow>=14"]
 
 [tool.setuptools]

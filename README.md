@@ -1,6 +1,6 @@
 # Just-in-Time Repair: Spending Test-Time Compute Where LLM-Generated Programs and SQL Fail
 
-Code for the paper of the same title by Xingjian Zhang.
+Code for the paper of the same title.
 
 JIT-Repair makes three decisions for every output a language model writes:
 
