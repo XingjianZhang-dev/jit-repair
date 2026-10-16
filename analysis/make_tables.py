@@ -111,7 +111,84 @@ def tab_spend():
     (OUT / "tab_spend.tex").write_text("\n".join(lines) + "\n")
 
 
+def tab_selmatch():
+    """JIT-Repair minus each allocation policy, with the policy's winner replacing the output or passing the same
+    selector (held-out BIRD, primary vote size). Source: analysis/selector_matched.csv (selector_matched.py)."""
+    rows = rd(HERE / "selector_matched.csv")
+    get = {(r["model"], r["comparator"]): r for r in rows if r["N"] == "3"}
+    spec = [("RAND_U", "Random"), ("RAND_G", "Random, same selector"), ("CONF_sum_U", "Confidence"),
+            ("CONF_sum_G", "Confidence, same selector"), ("LEN_q_U", "Length"), ("LEN_q_G", "Length, same selector"),
+            ("VER_U", r"\jit{} without selector")]
+    lines = [r"\begin{tabular}{@{}l r r r r l@{}}", r"\toprule",
+             r"\jit{} minus & Llama-3.1-8B & Mistral-7B & Qwen3-8B & Qwen3-14B & Pooled [95\% CI] \\", r"\midrule"]
+    for c, lab in spec:
+        cells = [sg(100 * float(get[(m, c)]["diff"]), 2) for m in ("llama31_8b", "mistral7b", "qwen3_8b", "qwen3_14b")]
+        pr = get[("POOLED", c)]
+        pooled = f"{sg(100 * float(pr['diff']), 2)} [{sg(100 * float(pr['ci_lo']), 2)}, {sg(100 * float(pr['ci_hi']), 2)}]"
+        if c == "VER_U":
+            lines.append(r"\addlinespace")
+        lines.append(f"{lab} & " + " & ".join(cells) + f" & {pooled} \\\\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    (OUT / "tab_selmatch.tex").write_text("\n".join(lines) + "\n")
+
+
+def tab_existing():
+    """JIT-Repair and its gated policies against existing ways of spending test-time compute, each comparison within
+    one hardware stack. Sources: equal_budget.csv (self-consistency, SQL cells), archive T3/T6 and arm audit
+    (Self-Refine, revision of every output), C1."""
+    eb = rd(HERE / "equal_budget.csv")
+    nc = sum(1 for r in eb if r["cell"] != "POOLED")
+    P = {r["stat"]: r for r in eb if r["cell"] == "POOLED"}
+    nN = {int(r["N_star"]) for r in eb if r["cell"] != "POOLED"}
+    t3 = {(r["model"], r["row"].split(" = ")[0]): r for r in rd(REC / "tables/T3_like_for_like_cost.csv")}
+    t6 = {(r["model"], r["comparator"]): r for r in rd(REC / "tables/T6_ablation.csv")}
+    c1 = {(r["model"], r["set"], r["comparison"]): r for r in rd(REC / "tables/C1_comparisons.csv")}
+    arch = jp.ARCHIVE / "drspider_oneuse"
+
+    def d1(x, lo, hi):                       # difference in points with its 95% interval, one decimal
+        return f"{sg(x)} [{sg(lo)}, {sg(hi)}]"
+
+    def group(t):
+        return [r"\addlinespace", r"\multicolumn{5}{@{}l}{\textit{" + t + r"}} \\"]
+
+    lines = [r"\begin{tabular}{@{}>{\raggedright\arraybackslash}p{4.5cm} r r l r@{}}", r"\toprule",
+             r"Setting (our policy) & Existing & Ours & Ours $-$ existing [95\% CI] & Cost: existing / ours \\", r"\midrule"]
+    lines += group("Self-consistency: a three-sample vote on every question")[1:]
+
+    def pooled(key, lab, a, b, cost):
+        s = P[key]
+        e = [100 * float(s[k]) for k in ("estimate", "ci_lo", "ci_hi")]
+        lines.append(f"{nc} SQL cells: {lab} & {100 * float(P[a]['estimate']):.2f} & {100 * float(P[b]['estimate']):.2f} & "
+                     f"{sg(e[0], 2)} [{sg(e[1], 2)}, {sg(e[2], 2)}] & {cost} \\\\")
+    pooled("diff_jit3_sc3", r"gain over greedy, points (\jit{}, vote of 3)", "gain_sc3", "gain_jit3",
+           f"{float(P['calls_sc3']['estimate']):.2f} / {float(P['calls_jit3']['estimate']):.2f} calls")
+    pooled("diff_broken_jit3_sc3", r"correct greedy outputs broken, \% (\jit{}, vote of 3)", "broken_sc3", "broken_jit3", "")
+    pooled("diff_jitN_sc3", f"gain over greedy at no more calls, points (\\jit{{}}, vote of up to {max(nN)})", "gain_sc3",
+           "gain_jitN", f"{float(P['calls_sc3']['estimate']):.2f} / {float(P['calls_jitN']['estimate']):.2f} calls")
+    lines += group(r"Self-Refine: critique and rewrite every output\textsuperscript{a}")
+    for mm, m in (("Llama-3.1-8B", "llama31_8b"), ("Mistral-7B", "mistral7b")):
+        sr, ji, d = t3[(mm, "Self-Refine")], t3[(mm, "JIT-Repair")], t6[(mm, "self_refine")]
+        lines.append(f"Dr.Spider, {mm} (\\jit{{}}, revise) & {f1(sr['accuracy'])} & {f1(ji['accuracy'])} & "
+                     f"{d1(float(d['difference_pp']), float(d['cluster_ci95_lo_pp']), float(d['cluster_ci95_hi_pp']))} & "
+                     f"{float(sr['model_calls_per_item']):.2f} / {float(ji['model_calls_per_item']):.2f} calls \\\\")
+    lines += group(r"Revision of every output\textsuperscript{a}")
+    for mm, m in (("Llama-3.1-8B", "llama31_8b"), ("Mistral-7B", "mistral7b")):
+        al, ji = t6[(mm, "always_generic")], t3[(mm, "JIT-Repair")]
+        au = json.load(open(arch / m / "arms_audit.json"))
+        n_all = int(ji["items"]); n_rev = au["arms"]["subset_always_generic"]["selection_reasons"]["always_use_generic_repair"]
+        lines.append(f"Dr.Spider, {mm} (\\jit{{}}, revise) & {f1(al['comparator_accuracy'])} & {f1(al['jit_accuracy'])} & "
+                     f"{d1(float(al['difference_pp']), float(al['cluster_ci95_lo_pp']), float(al['cluster_ci95_hi_pp']))} & "
+                     f"{(n_all + n_rev) / n_all:.2f} / {float(ji['model_calls_per_item']):.2f} calls \\\\")
+    lines += group("The model's own thinking mode on ProofWriter")
+    for mm, st, lab in (("Qwen3-14B", "CONF", "four-label"), ("Qwen3-14B", "D5", "depth-5"), ("Qwen3-8B", "D5", "depth-5")):
+        r = c1[(mm, st, "JIT-think")]
+        lines.append(f"{lab.capitalize()} set, {mm} (gated program) & {f1(r['baseline_acc'])} & {f1(r['jit_acc'])} & "
+                     f"{d1(100 * float(r['diff']), 100 * float(r['ci_lo']), 100 * float(r['ci_hi']))} & "
+                     f"{float(r['baseline_tokens_per_q']):,.0f} / {float(r['jit_tokens_per_q']):,.0f} tokens \\\\")
+    lines += [r"\bottomrule", r"\end{tabular}"]
+    (OUT / "tab_existing.tex").write_text("\n".join(lines) + "\n")
+
 if __name__ == "__main__":
-    tab_x7(); tab_c1(); tab_spend()
+    tab_x7(); tab_c1(); tab_spend(); tab_selmatch(); tab_existing()
     for p in sorted(OUT.iterdir()):
         print("==", p.name); print(p.read_text())

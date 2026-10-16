@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "jit-repair"
-version = "1.0.0"
+version = "1.1.0"
 description = "Just-in-Time Repair: spending test-time compute where LLM-generated programs and SQL fail"
 readme = "README.md"
 license = { text = "MIT" }

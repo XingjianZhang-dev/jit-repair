@@ -76,18 +76,20 @@ It recomputes the experiment tables in `records/tables` and writes the paper's t
 
 | Paper | Experiment | Code |
 |---|---|---|
-| Sec. 6.1, Fig. 2, Table 2, Supplement S3 | X7, allocation on held-out BIRD | `prepare_heldout_bird.py`, `x7_birddev.py`, `lp_score.py`, `x7_alloc.py`, `x7_confirm.py` |
+| Sec. 6.1, Fig. 2, Table 4, Supplement S3 | X7, allocation on held-out BIRD | `prepare_heldout_bird.py`, `x7_birddev.py`, `lp_score.py`, `x7_alloc.py`, `x7_confirm.py` |
+| Sec. 6.1, Table 3, Supplement S3 | X7, allocation with the same selector on every policy | `analysis/selector_matched.py` |
 | Sec. 6.2, Fig. 3, Fig. 4, Table S9 | fix–break ledger | `analysis/allocation_lens.py`, `analysis/allocation_theory.py` |
 | Sec. 6.3, Fig. 5, Supplement S4.2 | X3b and X3c, Dr.Spider | `x3b_drspider.py`, `x3b_peritem.py` |
 | Sec. 6.3, Supplement S4.1 | C2, accuracy–calls frontier | `generate_c1_c2.py`, `c2_analyze.py`, `c2_report.py` |
-| Sec. 6.4, Table 3, Supplement S4.3 | X3, revising the vote winner; spend choice | `x3_combo.py`, `x3_score.py`, `x7_boundary.py`, `analysis/allocation_lens.py` |
-| Sec. 6.5, Fig. 6, Table 4, Supplement S4.5 | C1, programs against reasoning | `generate_c1_c2.py`, `llama_cot_second_attempt.py`, `c1_analyze.py`, `c1_report.py`, `c1_llama_second_attempt_score.py` |
+| Sec. 6.4, Table 5, Supplement S4.3 | X3, revising the vote winner; spend choice | `x3_combo.py`, `x3_score.py`, `x7_boundary.py`, `analysis/allocation_lens.py` |
+| Sec. 6.5, Fig. 6, Table 6, Supplement S4.5 | C1, programs against reasoning | `generate_c1_c2.py`, `llama_cot_second_attempt.py`, `c1_analyze.py`, `c1_report.py`, `c1_llama_second_attempt_score.py` |
 | Sec. 6.6, Supplement S4.7 | G2 and G3, execution-only gate and Proposition 1 audit | `alloc_controls.py`, `prop1_check.py` |
 | Sec. 4, Supplement S2 | numeric checks of the propositions and corollaries; allocation curves | `analysis/allocation_theory.py`, `analysis/allocation_lens.py` |
 | Supplement S4.6 | archive results (second stack) | `experiments/archive/`, `t9_testsuite.py` |
 | Supplement S5 | X1 and X2 | `x1_residuals.py`, `x2_errortype.py` |
 | Supplement S6 | G1, output identity across stacks | `anchor_spider.py` |
-| Tables 2–4, Tables S1–S17 | LaTeX tables | `analysis/make_tables.py`, `analysis/make_supp_tables.py` |
+| Sec. 1, Table 1, Sec. 6.2 | comparison with existing policies; self-consistency at equal model calls | `analysis/equal_budget.py`, `analysis/make_tables.py` |
+| Tables 1 and 3–6, Tables S1–S17 | LaTeX tables | `analysis/make_tables.py`, `analysis/make_supp_tables.py` |
 | Figs. 2–6, Fig. S1 | figures | `analysis/figure_data.py`, `figures/make_figures.py` |
 
 The earlier runs on the second stack (Hugging Face Transformers on an NVIDIA RTX PRO 6000 Blackwell) used the

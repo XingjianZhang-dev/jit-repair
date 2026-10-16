@@ -30,6 +30,8 @@ python t6_ablation.py
 cd "$REPO/analysis"
 python allocation_theory.py
 python allocation_lens.py
+python selector_matched.py
+python equal_budget.py
 python make_tables.py
 python make_supp_tables.py
 python figure_data.py

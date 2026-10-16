@@ -63,8 +63,13 @@ def _fix_exp(path):
 
 def s3_x7():
     rows = rd(REC / "tables/X7_confirmation_allocation.csv")
-    comps = [("RAND_U", "random"), ("RAND_G", "random, with selector"), ("CONF_sum_U", "confidence (sum)"), ("CONF_mean_U", "confidence (mean)"),
-             ("CONF_min_U", "confidence (min)"), ("LEN_sql_U", "length (query)"), ("LEN_q_U", "length (question)"), ("VER_U", "gate, no selector")]
+    sm = rd(HERE / "selector_matched.csv")             # selector-matched rows (selector_matched.py)
+    rows = rows + [{"model": x["model"], "N": x["N"], "comparator": x["comparator"], "VER_G_minus": x["diff"], "ci_lo": x["ci_lo"],
+                    "ci_hi": x["ci_hi"]} for x in sm if x["comparator"] in ("CONF_sum_G", "LEN_q_G")]
+    comps = [("RAND_U", "random"), ("RAND_G", "random, with selector"), ("CONF_sum_U", "confidence (sum)"),
+             ("CONF_sum_G", "confidence (sum), with selector"), ("CONF_mean_U", "confidence (mean)"),
+             ("CONF_min_U", "confidence (min)"), ("LEN_sql_U", "length (query)"), ("LEN_q_U", "length (question)"),
+             ("LEN_q_G", "length (question), with selector"), ("VER_U", "gate, no selector")]
     for N in ("2", "3", "5"):
         L = [r"\begin{tabular}{@{}l r r r r r@{}}", r"\toprule", r"Comparator & Llama-3.1-8B & Mistral-7B & Qwen3-8B & Qwen3-14B & Pooled \\", r"\midrule"]
         for c, lab in comps:
@@ -248,7 +253,8 @@ def s5_ledger():
     L = [r"\begin{tabular}{@{}p{0.07\linewidth} >{\raggedright\arraybackslash}p{0.36\linewidth} >{\raggedright\arraybackslash}p{0.27\linewidth} >{\raggedright\arraybackslash}p{0.20\linewidth}@{}}", r"\toprule", r"ID & Check & Result & Verdict \\", r"\midrule"]
     for k in ("G0", "G1a", "G1b", "G2", "G3", "G4", "G5", "G6"):
         r = [x for x in rows if x["id"] == k][0]
-        L.append(f"{k} & {esc(r['test'])} & {esc(r['result'])} & {esc(r['verdict'])} \\\\")
+        v = "below 190/200" if k in ("G1a", "G1b") else esc(r["verdict"])
+        L.append(f"{k} & {esc(r['test'])} & {esc(r['result'])} & {v} \\\\")
     L += [r"\bottomrule", r"\end{tabular}"]
     write("s6_gates.tex", L)
 
